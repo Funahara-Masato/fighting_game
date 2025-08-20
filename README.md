@@ -1,11 +1,12 @@
 # Fighting Game
 
-シンプル人間格闘ゲーム。PvPおよびAI対戦モードに対応しており、PythonとPygameで作成されています。
+シンプルな格闘ゲーム。PvPおよびAI対戦モードに対応しており、PythonとPygameで作成されています。
 
 ## ゲーム内容
 - プレイヤー1（赤）とプレイヤー2（青）による格闘
 - PvPモードとAI対戦モードを選択可能
 - ジャンプ・移動・攻撃の操作に対応
+- ジャンプで相手の攻撃を回避可能
 - HPバー、攻撃アニメーション、のけぞり効果あり
 - BGMと効果音搭載
 
@@ -25,12 +26,11 @@
 - プレイヤー1が操作可能
 - プレイヤー2はAIが自動で操作
 
-
 ## 実行方法
 以下のコマンドを実行してアプリを起動します。  
 
 ```bash
-streamlit run app.py
+.\run app.py
 ```
 
 仮想環境が作成され，ライブラリがインストールされます。  
@@ -48,3 +48,11 @@ stickman_fighting_game/
 ├─ requirements.txt  
 └─ run_app.bat  
 
+---
+
+## 作者
+
+作成者: Masato Funahara  
+連絡先: funaharamasato@gmail.com
+
+---
