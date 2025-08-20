@@ -32,12 +32,12 @@
 ## ファイル構成
 stickman_fighting_game/  
 │  
-├─ main.py          # メインループ  
-├─ fighter.py       # キャラクタークラス  
+├─ main.py&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;# メインループ  
+├─ fighter.py&emsp;&emsp;&emsp;&emsp;# キャラクタークラス  
 ├─ assets/  
-│   ├─ bgm.mp3  
-│   ├─ hit.mp3  
-│   └─ background.jpg  
+│&emsp;&emsp;├─ bgm.mp3  
+│&emsp;&emsp;├─ hit.mp3  
+│&emsp;&emsp;└─ background.jpg  
 ├─ requirements.txt  
 └─ run_app.bat  
 
