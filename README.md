@@ -30,14 +30,14 @@
 .\run_app.bat
 
 ## ファイル構成
-stickman_fighting_game/
-│
-├─ main.py          # メインループ
-├─ fighter.py       # キャラクタークラス
-├─ assets/
-│   ├─ bgm.mp3
-│   ├─ hit.mp3
-│   └─ background.jpg
-├─ requirements.txt
-└─ run_app.bat
+stickman_fighting_game/  
+│  
+├─ main.py          # メインループ  
+├─ fighter.py       # キャラクタークラス  
+├─ assets/  
+│   ├─ bgm.mp3  
+│   ├─ hit.mp3  
+│   └─ background.jpg  
+├─ requirements.txt  
+└─ run_app.bat  
 
