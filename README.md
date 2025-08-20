@@ -27,12 +27,19 @@
 
 
 ## 実行方法
-.\run_app.bat
+以下のコマンドを実行してアプリを起動します。  
+
+```bash
+streamlit run app.py
+```
+
+仮想環境が作成され，ライブラリがインストールされます。  
+その後ブラウザが自動で開かれ，アプリを利用できます。  
 
 ## ファイル構成
 stickman_fighting_game/  
 │  
-├─ main.py&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;# メインループ  
+├─ main.py&emsp;&emsp;&emsp;&emsp;&emsp;# メインループ  
 ├─ fighter.py&emsp;&emsp;&emsp;&emsp;# キャラクタークラス  
 ├─ assets/  
 │&emsp;&emsp;├─ bgm.mp3  
