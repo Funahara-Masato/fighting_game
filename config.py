@@ -4,7 +4,7 @@ pygame.init()
 
 WIDTH, HEIGHT = 800, 400
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("棒人間格闘ゲーム - AI対戦")
+pygame.display.set_caption("ゴム人間格闘ゲーム")
 
 FPS = 60
 WHITE = (255, 255, 255)

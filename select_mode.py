@@ -14,7 +14,7 @@ def select_mode():
         clock.tick(FPS)
         WIN.fill(WHITE)
 
-        title_text = jp_font.render("ゲームモード選択", True, (0,0,0))
+        title_text = jp_font.render("ゴム人間格闘ゲーム", True, (0,0,0))
         WIN.blit(title_text, (WIDTH//2 - title_text.get_width()//2, 30))
 
         ai_text = jp_small.render("AIと対戦", True, WHITE)
@@ -31,9 +31,9 @@ def select_mode():
 
         info_lines = [
             "PvP操作方法：",
-            "　プレイヤー1（赤）: 移動 A/D, ジャンプ W, 攻撃 S, ガード Q",
-            "　プレイヤー2（青）: 移動 ←/→, ジャンプ ↑, 攻撃 ↓, ガード RShift",
-            "　※ガード中はダメージ軽減・空中攻撃も可能",
+            "　P1（赤）: 移動 A/D, ジャンプ W, 攻撃 S, ガード Q",
+            "　P2（青）: 移動 ←/→, ジャンプ ↑, 攻撃 ↓, ガード RShift",
+            "　同方向２連打でダッシュ / 攻撃長押しでゴムゴムのピストル",
         ]
         for i, line in enumerate(info_lines):
             info_text = jp_small.render(line, True, (0,0,0))
