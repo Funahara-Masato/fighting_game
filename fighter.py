@@ -35,7 +35,7 @@ class Fighter:
     DASH_DURATION = 8
     DASH_SPEED    = 14
     DASH_WINDOW   = 14
-    DODGE_HEIGHT  = 50   # これ以上の高さにいると地上攻撃を無効化
+    DODGE_HEIGHT  = 50
 
     def __init__(self, x, y, color, facing="right"):
         self.x = x
@@ -82,17 +82,14 @@ class Fighter:
         self.bounce_count = 0
         self.charge_sparks = []
         self._prev_atk = False
-        # main.pyから参照される演出フラグ
         self.popup_text = ""
         self.popup_timer = 0
         self.trigger_screen_flash = False
 
-    # ------------------------------------------------------------------ draw
     def draw(self, win):
         draw_color = YELLOW if self.hit_flash > 0 else self.color
         cx = int(self.x + self.width // 2)
 
-        # 被弾ぐにゃり
         if self.wobble_timer > 0:
             cx += int(6 * math.sin(self.wobble_timer * 1.3) * (self.wobble_timer / 15))
             self.wobble_timer -= 1
@@ -105,10 +102,8 @@ class Fighter:
         sho_y  = head_y + 12
         hip_y  = int(self.y - 12 + sq * 7)
 
-        # ダッシュ頭遅延
         head_cx = cx - self.dash_dir * 7 if self.dash_timer > 0 else cx
 
-        # ガードリング
         if self.is_guarding:
             flash = self.guard_flash / 8.0
             pygame.draw.circle(win,
@@ -117,7 +112,6 @@ class Fighter:
         if self.guard_flash > 0:
             self.guard_flash -= 1
 
-        # ガードスパーク
         alive = []
         for x, y, vx, vy, life in self.guard_sparks:
             if life > 0:
@@ -125,7 +119,6 @@ class Fighter:
                 alive.append((x+vx, y+vy, vx, vy+0.4, life-1))
         self.guard_sparks = alive
 
-        # 溜めパーティクル（橙色、オーラ）
         alive_c = []
         for x, y, vx, vy, life in self.charge_sparks:
             if life > 0:
@@ -134,7 +127,6 @@ class Fighter:
                 alive_c.append((x+vx, y+vy, vx, vy+0.3, life-1))
         self.charge_sparks = alive_c
 
-        # 溜め中グロー（脈動）
         if self.is_charging:
             t = min(1.0, self.charge_timer / self.CHARGE_FRAMES)
             pulse = 0.7 + 0.3 * math.sin(self.frame * 0.35)
@@ -144,7 +136,6 @@ class Fighter:
                                (cx, sho_y + 5), r_outer, 3)
             pygame.draw.circle(win, (255, 240, 100),
                                (cx, sho_y + 5), r_inner)
-            # 溜め中スパーク散布
             if t > 0.5 and self.frame % 3 == 0:
                 ang = random.uniform(0, 2 * math.pi)
                 sx = cx + int(r_outer * math.cos(ang))
@@ -153,17 +144,14 @@ class Fighter:
                     (sx, sy, random.uniform(-2, 2),
                      random.uniform(-3, 0), random.randint(4, 8)))
 
-        # 頭
         pygame.draw.circle(win, draw_color, (head_cx, head_y), 10)
         ex = 4 if self.facing == "right" else -4
         pygame.draw.circle(win, (0, 0, 0), (head_cx + ex, head_y - 2), 2)
 
-        # 頭と胴体のゴム紐（ダッシュ時）
         if self.dash_timer > 0 and head_cx != cx:
             _bezier(win, draw_color, (head_cx, head_y + 10), (cx, sho_y),
                     sag=self.dash_dir * -4, w=3)
 
-        # 胴体
         body_h = max(hip_y - sho_y + 2, 8)
         pygame.draw.rect(win, draw_color,
                          pygame.Rect(cx - 6, sho_y, 13, body_h),
@@ -175,9 +163,7 @@ class Fighter:
         sho_pt = (cx, sho_y + 4)
         SWING = 35
 
-        # ---- 脚 ----
         if self.is_aerial_attack and self.attack_progress > 0:
-            # ジャンプキック姿勢
             t = self.attack_progress
             ext = (t / 0.5) if t < 0.5 else max(0.0, 1 - (t - 0.5) / 0.5)
             s = 1 if self.facing == "right" else -1
@@ -189,7 +175,6 @@ class Fighter:
             _seg(win, draw_color, (cx, hip_y), (knee_x, knee_y))
             _seg(win, draw_color, (knee_x, knee_y), (foot_x, foot_y), w=5)
 
-            # 引き足（後方に曲げる）
             tk_x = int(cx - s * 10)
             tk_y = hip_y - 12
             _seg(win, draw_color, (cx, hip_y), (tk_x, tk_y))
@@ -211,16 +196,13 @@ class Fighter:
                 _seg(win, draw_color, (cx, hip_y), knee)
                 _seg(win, draw_color, knee, foot)
 
-        # ---- 腕 ----
         if self.is_aerial_attack and self.attack_progress > 0:
-            # キック時：両腕を広げてバランス
             s = 1 if self.facing == "right" else -1
             for arm_s, ang, sg in [(1, s*75, -4), (-1, -s*65, 3)]:
                 ep = _pt(*sho_pt, UA + LA * 0.8, ang)
                 _bezier(win, draw_color, sho_pt, (int(ep[0]), int(ep[1])), sag=sg, w=3)
 
         elif self.attack_progress > 0:
-            # 通常/溜めゴムパンチ
             t = self.attack_progress
             s = 1 if self.facing == "right" else -1
 
@@ -255,7 +237,6 @@ class Fighter:
             arm_w = 6 if self.is_charged_attack else 4
             _bezier(win, draw_color, sho_pt, (arm_x, arm_y), sag=sag, w=arm_w)
 
-            # 溜め拳エフェクト（オレンジ炎）
             if self.is_charged_attack and ext > 0:
                 for i, (size, col) in enumerate([
                     (int(12 * max(0, ext)), (255, 80, 0)),
@@ -265,7 +246,6 @@ class Fighter:
                     if size > 0:
                         pygame.draw.circle(win, col, (arm_x, arm_y), size)
 
-            # 引き腕
             back_x = int(cx - s * 18)
             _bezier(win, draw_color, sho_pt, (back_x, sho_y + 18), sag=4, w=3)
 
@@ -290,7 +270,6 @@ class Fighter:
         if self.hit_flash > 0:
             self.hit_flash -= 1
 
-    # ---------------------------------------------------------- damage logic
     def _deal_damage(self, opponent):
         if self.is_aerial_attack:
             reach, knockback, damage = 90, 8, 15
@@ -309,11 +288,10 @@ class Fighter:
         if not in_range:
             return
 
-        # 地上攻撃は高さ DODGE_HEIGHT 以上の空中キャラに当たらない
         if not self.is_aerial_attack and self.on_ground:
             air_height = opponent.ground_y - opponent.y
             if not opponent.on_ground and air_height > self.DODGE_HEIGHT:
-                self.hit_registered = True  # 空振り扱い
+                self.hit_registered = True
                 return
 
         if opponent.is_guarding and opponent.guard_hp > 0:
@@ -341,7 +319,6 @@ class Fighter:
             hit_sound.play()
             self.hit_registered = True
 
-            # 溜めヒット演出
             if self.is_charged_attack:
                 opponent.popup_text  = "PISTOL !"
                 opponent.popup_timer = 55
@@ -353,12 +330,10 @@ class Fighter:
                         (sx, sy, random.uniform(-5, 5),
                          random.uniform(-5, 1), random.randint(8, 14)))
 
-            # 空中キックヒット演出
             elif self.is_aerial_attack:
                 opponent.popup_text  = "KICK !"
                 opponent.popup_timer = 40
 
-    # ------------------------------------------------------------------ move
     def move(self, keys,
              left_key=None, right_key=None, jump_key=None,
              attack_key=None, guard_key=None,
@@ -382,10 +357,10 @@ class Fighter:
                 and self.on_ground
                 and self.charge_timer == 0
                 and self.attack_progress == 0
+                and self.guard_hp > 0
             )
 
             if not self.is_guarding:
-                # ダッシュ（ダブルタップ）
                 if cur_left and not self._prev_left:
                     if (self._tap_dir == "left"
                             and (self.frame - self._tap_frame) <= self.DASH_WINDOW
@@ -404,7 +379,6 @@ class Fighter:
                     else:
                         self._tap_dir, self._tap_frame = "right", self.frame
 
-                # 移動
                 if self.dash_timer > 0:
                     self.x += self.DASH_SPEED * self.dash_dir
                     self.facing = "right" if self.dash_dir > 0 else "left"
@@ -416,13 +390,11 @@ class Fighter:
                     if cur_right:
                         self.x += self.vel_x; self.facing = "right"; moved = True
 
-                # ジャンプ
                 if keys[jump_key] and self.on_ground and self.jump_cooldown == 0:
                     self.vel_y = -13
                     self.on_ground = False
                     self.jump_cooldown = 30
 
-                # 空中攻撃（即時キック）
                 if not self.on_ground and attack_key and keys[attack_key]:
                     if not self._prev_atk and self.attack_cooldown == 0:
                         self.attack_cooldown = 40
@@ -433,7 +405,6 @@ class Fighter:
                     self._prev_atk = True
                 else:
                     if self.on_ground:
-                        # 地上溜め攻撃
                         if attack_key and keys[attack_key] and self.attack_cooldown == 0:
                             self.charge_timer += 1
                             self.is_charging = self.charge_timer >= self.CHARGE_FRAMES
@@ -459,7 +430,6 @@ class Fighter:
             self._prev_right = cur_right
 
         else:
-            # ---- AIステートマシン ----
             dist     = opponent.x - self.x
             abs_dist = abs(dist)
             self.facing = "right" if dist >= 0 else "left"
@@ -503,7 +473,6 @@ class Fighter:
         if self.attack_cooldown > 0:
             self.attack_cooldown -= 1
 
-        # 重力・ゴムバウンド
         if not self.on_ground:
             self.vel_y += 1
             self.y += self.vel_y
@@ -520,7 +489,6 @@ class Fighter:
                     self.bounce_count = 0
         self.was_on_ground = self.on_ground
 
-        # 攻撃アニメーション・当たり判定
         if self.attack_progress > 0:
             self.attack_progress += 0.1
 
@@ -540,7 +508,6 @@ class Fighter:
                 self.is_charged_attack = False
                 self.is_aerial_attack = False
 
-        # ガードメーター回復
         if not self.is_guarding and self.guard_hp < self.GUARD_MAX:
             self.guard_regen_timer += 1
             if self.guard_regen_timer >= self.GUARD_REGEN:
@@ -549,7 +516,6 @@ class Fighter:
         elif self.is_guarding:
             self.guard_regen_timer = 0
 
-        # 歩行サイクル
         if moved and self.on_ground:
             self.walk_vel = min(0.28, self.walk_vel + 0.05)
         else:
