@@ -8,7 +8,6 @@ def main():
     clock = pygame.time.Clock()
     run = True
 
-    # ゲームモードを選択
     GAME_MODE = select_mode()
 
     player1 = Fighter(100, GROUND, RED)
@@ -25,17 +24,18 @@ def main():
                 sys.exit()
 
         keys = pygame.key.get_pressed()
-        player1.move(keys, pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s, opponent=player2)
+        player1.move(keys, pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s,
+                     guard_key=pygame.K_q, opponent=player2)
 
         if GAME_MODE == "AI":
             player2.move(keys, ai=True, opponent=player1)
         else:
-            player2.move(keys, pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN, opponent=player1, ai=False)
+            player2.move(keys, pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN,
+                         guard_key=pygame.K_RSHIFT, opponent=player1, ai=False)
 
         player1.draw(WIN)
         player2.draw(WIN)
 
-        # 勝敗判定
         font = pygame.font.SysFont(None, 60)
         if player1.hp <= 0:
             text = font.render("BLUE WINS!", True, (0,0,0))
