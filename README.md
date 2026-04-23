@@ -1,58 +1,55 @@
 # Fighting Game
 
-シンプルな格闘ゲーム。PvPおよびAI対戦モードに対応しており、PythonとPygameで作成されています。
+Pygame で実装した 2D スティックマン格闘ゲーム。PvP と AI 対戦の 2 モード搭載。
 
-## ゲーム内容
-- プレイヤー1（赤）とプレイヤー2（青）による格闘
-- PvPモードとAI対戦モードを選択可能
-- ジャンプ・移動・攻撃の操作に対応
-- ジャンプで相手の攻撃を回避可能
-- HPバー、攻撃アニメーション、のけぞり効果あり
-- BGMと効果音搭載
+## 特徴
+
+- 膝・肘関節による 2 セグメント四肢アニメーション
+- ジャンプ中の専用ポーズ・着地スクワッシュエフェクト
+- 歩行サイクルのなめらかな加減速
+- のけぞり・スタン・ヒットフラッシュ
+- HP バー・BGM・効果音
 
 ## 操作方法
 
-### PvPモード
-- プレイヤー1（赤）
-  - 移動: `A / D`
-  - ジャンプ: `W`
-  - 攻撃: `S`
-- プレイヤー2（青）
-  - 移動: `← / →`
-  - ジャンプ: `↑`
-  - 攻撃: `↓`
+### プレイヤー 1（赤）
+| アクション | キー |
+|-----------|------|
+| 移動 | `A` / `D` |
+| ジャンプ | `W` |
+| 攻撃 | `S` |
 
-### AIモード
-- プレイヤー1が操作可能
-- プレイヤー2はAIが自動で操作
+### プレイヤー 2（青）— PvP のみ
+| アクション | キー |
+|-----------|------|
+| 移動 | `←` / `→` |
+| ジャンプ | `↑` |
+| 攻撃 | `↓` |
 
 ## 実行方法
-以下のコマンドを実行してアプリを起動します。  
 
 ```bash
-.\run app.py
+pip install pygame
+python main.py
 ```
 
-仮想環境が作成され，ライブラリがインストールされます。  
-その後ブラウザが自動で開かれ，アプリを利用できます。  
+Windows の場合は `run_app.bat` をダブルクリックでも起動できます。
 
 ## ファイル構成
-stickman_fighting_game/  
-│  
-├─ main.py&emsp;&emsp;&emsp;&emsp;&emsp;# メインループ  
-├─ fighter.py&emsp;&emsp;&emsp;&emsp;# キャラクタークラス  
-├─ assets/  
-│&emsp;&emsp;├─ bgm.mp3  
-│&emsp;&emsp;├─ hit.mp3  
-│&emsp;&emsp;└─ background.jpg  
-├─ requirements.txt  
-└─ run_app.bat  
 
----
+```
+fighting_game/
+├── main.py          # メインループ・勝敗判定
+├── fighter.py       # キャラクタークラス（描画・物理）
+├── config.py        # 定数・Pygame 初期化
+├── select_mode.py   # モード選択画面
+├── assets/
+│   ├── bgm.mp3
+│   ├── hit.mp3
+│   └── background.jpg
+└── requirements.txt
+```
 
 ## 作者
 
-作成者: Masato Funahara  
-連絡先: funaharamasato@gmail.com
-
----
+Masato Funahara — funaharamasato@gmail.com
