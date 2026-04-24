@@ -115,6 +115,12 @@ def main():
 
     GAME_MODE = select_mode()
 
+    # \u6226\u95d8BGM\u306b\u5207\u308a\u66ff\u3048
+    pygame.mixer.music.fadeout(400)
+    pygame.mixer.music.load("assets/bgm.mp3")
+    pygame.mixer.music.set_volume(0.22)
+    pygame.mixer.music.play(-1)
+
     jp_hud   = pygame.font.Font("meiryo.ttf", 18)
     jp_popup = pygame.font.Font("meiryo.ttf", 22)
     jp_big   = pygame.font.Font("meiryo.ttf", 52)

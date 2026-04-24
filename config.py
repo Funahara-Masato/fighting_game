@@ -13,11 +13,7 @@ BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
 GROUND = HEIGHT - 83
 
-# \u80cc\u666f\u97f3\u697d
-pygame.mixer.init()
-pygame.mixer.music.load("assets/bgm.mp3")
-pygame.mixer.music.set_volume(0.2)
-pygame.mixer.music.play(-1)
+pygame.mixer.init()  # BGM\u518d\u751f\u306f\u5404\u753b\u9762\u3067\u884c\u3046
 
 # \u52b9\u679c\u97f3
 hit_sound = pygame.mixer.Sound("assets/hit.mp3")

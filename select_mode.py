@@ -24,6 +24,14 @@ def _glow_text(win, font, text, color, cx, cy, glow_r=3):
 
 
 def select_mode():
+    # \u30bb\u30ec\u30af\u30c8\u753b\u9762BGM\uff08bgm_select.mp3\u304c\u3042\u308c\u3070\u4f7f\u7528\u3001\u306a\u3051\u308c\u3070bgm.mp3\u3092\u4)?\u97f3\u91cf\u3067\uff09
+    try:
+        pygame.mixer.music.load("assets/bgm_select.mp3")
+    except Exception:
+        pygame.mixer.music.load("assets/bgm.mp3")
+    pygame.mixer.music.set_volume(0.12)
+    pygame.mixer.music.play(-1)
+
     clock = pygame.time.Clock()
     run = True
     mode = None
