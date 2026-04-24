@@ -7,6 +7,26 @@ from select_mode import select_mode
 
 TIMER_SECONDS = 90
 HUD_H = 50
+SPIKE_D  = 22
+SPIKE_W  = 16
+SPIKE_COL  = (160, 65, 45)
+SPIKE_DARK = (70, 25, 15)
+SPIKE_TIP  = (220, 180, 100)
+
+
+def draw_spikes(win):
+    num = HEIGHT // SPIKE_W + 2
+    for i in range(num):
+        y = i * SPIKE_W
+        mid = y + SPIKE_W // 2
+        pts_l = [(0, y), (0, y + SPIKE_W), (SPIKE_D, mid)]
+        pygame.draw.polygon(win, SPIKE_COL, pts_l)
+        pygame.draw.line(win, SPIKE_TIP, (0, mid), (SPIKE_D, mid), 2)
+        pygame.draw.polygon(win, SPIKE_DARK, pts_l, 1)
+        pts_r = [(WIDTH, y), (WIDTH, y + SPIKE_W), (WIDTH - SPIKE_D, mid)]
+        pygame.draw.polygon(win, SPIKE_COL, pts_r)
+        pygame.draw.line(win, SPIKE_TIP, (WIDTH, mid), (WIDTH - SPIKE_D, mid), 2)
+        pygame.draw.polygon(win, SPIKE_DARK, pts_r, 1)
 
 
 def draw_hud(win, p1, p2, timer_frames, jp_font):
@@ -112,6 +132,7 @@ def main():
 
         win_surf = WIN
         win_surf.blit(background_img, (0, 0))
+        draw_spikes(win_surf)
 
         if screen_flash > 0:
             flash_surf = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)

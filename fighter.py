@@ -82,6 +82,7 @@ class Fighter:
         self.bounce_count = 0
         self.charge_sparks = []
         self._prev_atk = False
+        self.spike_cooldown = 0
         self.popup_text = ""
         self.popup_timer = 0
         self.trigger_screen_flash = False
@@ -127,22 +128,38 @@ class Fighter:
                 alive_c.append((x+vx, y+vy, vx, vy+0.3, life-1))
         self.charge_sparks = alive_c
 
-        if self.is_charging:
-            t = min(1.0, self.charge_timer / self.CHARGE_FRAMES)
-            pulse = 0.7 + 0.3 * math.sin(self.frame * 0.35)
-            r_outer = int((10 + 18 * t) * pulse)
-            r_inner = max(3, r_outer // 3)
-            pygame.draw.circle(win, (255, int(100 * t), 0),
-                               (cx, sho_y + 5), r_outer, 3)
-            pygame.draw.circle(win, (255, 240, 100),
-                               (cx, sho_y + 5), r_inner)
-            if t > 0.5 and self.frame % 3 == 0:
-                ang = random.uniform(0, 2 * math.pi)
-                sx = cx + int(r_outer * math.cos(ang))
-                sy = (sho_y + 5) + int(r_outer * math.sin(ang))
+        # \u6e9c\u3081\u4e2d\u30aa\u30fc\u30e9\uff08charge_timer > 0 \u304b\u3089\u5f90\u3005\u306b\u6210\u9577\uff09
+        if self.charge_timer > 0:
+            t     = min(1.0, self.charge_timer / self.CHARGE_FRAMES)
+            ready = self.is_charging
+            pulse = 0.85 + 0.15 * math.sin(self.frame * (0.40 if ready else 0.15))
+
+            aura_r = int((14 + 34 * t) * pulse)
+            sz = aura_r * 2 + 10
+            aura_surf = pygame.Surface((sz, sz), pygame.SRCALPHA)
+            ac = sz // 2
+            for i in range(10, 0, -1):
+                r = max(1, int(aura_r * i / 10))
+                if ready:
+                    alpha = min(200, int(90 * (i / 10) * pulse))
+                    col = (255, int(180 + 75 * (i / 10)), int(20 * (1 - i / 10)), alpha)
+                else:
+                    alpha = min(150, int(55 * t * (i / 10)))
+                    col = (255, int(55 * t * (i / 10)), 0, alpha)
+                pygame.draw.circle(aura_surf, col, (ac, ac), r)
+            win.blit(aura_surf, (cx - aura_r - 5, sho_y - aura_r + 4))
+
+            interval = 2 if ready else max(3, 6 - int(4 * t))
+            if self.frame % interval == 0:
+                ang  = random.uniform(0, 2 * math.pi)
+                dist = aura_r * random.uniform(0.55, 0.95)
+                sx   = cx + int(dist * math.cos(ang))
+                sy   = (sho_y + 4) + int(dist * 0.65 * math.sin(ang))
+                spd  = 3.0 if ready else 1.5 * t + 0.5
+                life = random.randint(6, 14) if ready else random.randint(3, 7)
                 self.charge_sparks.append(
-                    (sx, sy, random.uniform(-2, 2),
-                     random.uniform(-3, 0), random.randint(4, 8)))
+                    (sx, sy, random.uniform(-spd, spd),
+                     random.uniform(-spd, 0), life))
 
         pygame.draw.circle(win, draw_color, (head_cx, head_y), 10)
         ex = 4 if self.facing == "right" else -4
@@ -316,7 +333,10 @@ class Fighter:
             opponent.x            += knockback * kb_dir
             opponent.attack_progress = 0
             opponent.wobble_timer = 15
-            hit_sound.play()
+            if self.is_charged_attack:
+                pistol_sound.play()
+            else:
+                hit_sound.play()
             self.hit_registered = True
 
             if self.is_charged_attack:
@@ -525,3 +545,18 @@ class Fighter:
             self.walk_cycle -= 2 * math.pi
 
         self.x = max(0, min(WIDTH - self.width, self.x))
+
+        # \u68d8\u58c1\u30c0\u30e1\u30fc\u30b8\uff08\u7aef\u306e22px\u4ee5\u5185\uff09
+        if self.spike_cooldown > 0:
+            self.spike_cooldown -= 1
+        elif self.spike_cooldown == 0:
+            in_left  = self.x < 22
+            in_right = self.x > WIDTH - self.width - 22
+            if in_left or in_right:
+                self.hp          -= 4
+                self.hit_flash    = 6
+                self.wobble_timer = 10
+                self.stun_timer   = 8
+                self.x           += 28 if in_left else -28
+                self.spike_cooldown = 55
+                spike_sound.play()
