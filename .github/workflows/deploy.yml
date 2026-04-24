@@ -22,14 +22,14 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install dependencies
-        run: pip install pygbag pygame numpy
-
-      - name: Install virtual display
-        run: sudo apt-get install -y xvfb
+      - name: Install pygbag
+        run: pip install pygbag
 
       - name: Build
-        run: xvfb-run pygbag --build --width 800 --height 400 .
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+        run: pygbag --build .
 
       - uses: actions/upload-pages-artifact@v3
         with:
