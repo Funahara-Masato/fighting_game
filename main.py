@@ -129,7 +129,7 @@ async def main():
 
     # 戦闘BGMに切り替え
     pygame.mixer.music.fadeout(400)
-    pygame.mixer.music.load("assets/bgm.mp3")
+    pygame.mixer.music.load("assets/bgm.ogg")
     pygame.mixer.music.set_volume(0.22)
     pygame.mixer.music.play(-1)
 

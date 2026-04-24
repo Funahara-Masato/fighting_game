@@ -16,7 +16,7 @@ GROUND = HEIGHT - 83
 pygame.mixer.init()  # BGM再生は各画面で行う
 
 # 効果音
-hit_sound = pygame.mixer.Sound("assets/hit.mp3")
+hit_sound = pygame.mixer.Sound("assets/hit.ogg")
 hit_sound.set_volume(0.3)
 
 # ガード音（金属的なカキン）をnumpyで生成
