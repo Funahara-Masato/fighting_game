@@ -1,6 +1,7 @@
 import pygame
 import sys
 import math
+import asyncio
 from config import *
 
 BG       = (12, 12, 18)
@@ -23,14 +24,8 @@ def _glow_text(win, font, text, color, cx, cy, glow_r=3):
     win.blit(s, (cx - s.get_width() // 2, cy - s.get_height() // 2))
 
 
-def select_mode():
-    # \u30bb\u30ec\u30af\u30c8\u753b\u9762BGM\uff08bgm_select.mp3\u304c\u3042\u308c\u3070\u4f7f\u7528\u3001\u306a\u3051\u308c\u3070bgm.mp3\u3092\u4)?\u97f3\u91cf\u3067\uff09
-    try:
-        pygame.mixer.music.load("assets/bgm_select.mp3")
-    except Exception:
-        pygame.mixer.music.load("assets/bgm.mp3")
-    pygame.mixer.music.set_volume(0.12)
-    pygame.mixer.music.play(-1)
+async def select_mode():
+    select_bgm_sound.play(loops=-1)
 
     clock = pygame.time.Clock()
     run = True
@@ -51,18 +46,21 @@ def select_mode():
 
         WIN.fill(BG)
 
+        # タイトルグロー（脈動）
         pulse = 0.75 + 0.25 * math.sin(frame * 0.06)
         r = int(220 * pulse)
         g = int(40 * pulse)
         title_col = (r, g, 0)
-        _glow_text(WIN, jp_title, "\u30b4\u30e0\u4eba\u9593\u683c\u95d8\u30b2\u30fc\u30e0", title_col,
+        _glow_text(WIN, jp_title, "ゴム人間格闘ゲーム", title_col,
                    WIDTH // 2, 68, glow_r=4)
 
+        # サブタイトル
         sub = jp_info.render("RUBBER HUMAN FIGHTING GAME", True, TEXT_DIM)
         WIN.blit(sub, (WIDTH // 2 - sub.get_width() // 2, 110))
 
+        # ボタン描画
         for rect, label, base_col in [
-            (ai_rect,  "AI\u3068\u5bfe\u6226",  ACCENT_R),
+            (ai_rect,  "AIと対戦",  ACCENT_R),
             (pvp_rect, "PvP",       ACCENT_B),
         ]:
             hover = rect.collidepoint(mx, my)
@@ -76,22 +74,24 @@ def select_mode():
             WIN.blit(txt_surf, (rect.centerx - txt_surf.get_width() // 2,
                                 rect.centery - txt_surf.get_height() // 2))
 
+        # 操作説明パネル
         info_y = 295
-        panel_rect = pygame.Rect(30, info_y - 8, WIDTH - 60, 100)
+        panel_rect = pygame.Rect(30, info_y - 8, WIDTH - 60, 108)
         pygame.draw.rect(WIN, PANEL, panel_rect, border_radius=6)
         pygame.draw.rect(WIN, (50, 50, 70), panel_rect, 1, border_radius=6)
 
         info_lines = [
-            ("PvP \u64cd\u4f5c\u65b9\u6cd5", TEXT_LT),
-            ("P1\uff08\u8d64\uff09  A/D:\u79fb\u52d5  W:\u30b8\u30e3\u30f3\u30d7  S:\u653b\u6483\uff08\u9577\u62bc\u3057=\u30d4\u30b9\u30c8\u30eb\uff09  Q:\u30ac\u30fc\u30c9", TEXT_DIM),
-            ("P2\uff08\u9752\uff09  \u2190/\u2192:\u79fb\u52d5  \u2191:\u30b8\u30e3\u30f3\u30d7  \u2193:\u653b\u6483\uff08\u9577\u62bc\u3057=\u30d4\u30b9\u30c8\u30eb\uff09  RShift:\u30ac\u30fc\u30c9", TEXT_DIM),
-            ("\u5171\u901a: \u540c\u65b9\u54112\u9023\u6253=\u30c0\u30c3\u30b7\u30e5  /  \u7a7a\u4e2d\u3067\u653b\u6483=\u30ad\u30c3\u30af\uff08\u5730\u4e0a\u653b\u6483\u3092\u56de\u907f\uff09", TEXT_DIM),
+            ("PvP 操作方法", TEXT_LT),
+            ("P1（赤）  A/D:移動  W:ジャンプ  S:攻撃（長押し=ピストル）  Q:ガード", TEXT_DIM),
+            ("P2（青）  ←/→:移動  ↑:ジャンプ  ↓:攻撃（長押し=ピストル）  RShift:ガード", TEXT_DIM),
+            ("共通: 同方向2連打=ダッシュ  /  空中で攻撃=キック（地上攻撃を回避）", TEXT_DIM),
         ]
         for i, (line, col) in enumerate(info_lines):
             surf = jp_info.render(line, True, col)
             WIN.blit(surf, (44, info_y + i * 22))
 
         pygame.display.update()
+        await asyncio.sleep(0)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -105,4 +105,5 @@ def select_mode():
                 elif pvp_rect.collidepoint(event.pos):
                     mode = "PVP"; run = False
 
+    select_bgm_sound.stop()
     return mode

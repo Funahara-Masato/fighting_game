@@ -1,14 +1,15 @@
 import pygame
 import sys
 import math
+import asyncio
 from config import *
 from fighter import Fighter
 from select_mode import select_mode
 
 TIMER_SECONDS = 90
 HUD_H = 50
-SPIKE_D  = 22
-SPIKE_W  = 16
+SPIKE_D  = 22   # 棘の奥行き（px）
+SPIKE_W  = 16   # 棘1本の幅
 SPIKE_COL  = (160, 65, 45)
 SPIKE_DARK = (70, 25, 15)
 SPIKE_TIP  = (220, 180, 100)
@@ -19,10 +20,12 @@ def draw_spikes(win):
     for i in range(num):
         y = i * SPIKE_W
         mid = y + SPIKE_W // 2
+        # 左壁（右向き）
         pts_l = [(0, y), (0, y + SPIKE_W), (SPIKE_D, mid)]
         pygame.draw.polygon(win, SPIKE_COL, pts_l)
         pygame.draw.line(win, SPIKE_TIP, (0, mid), (SPIKE_D, mid), 2)
         pygame.draw.polygon(win, SPIKE_DARK, pts_l, 1)
+        # 右壁（左向き）
         pts_r = [(WIDTH, y), (WIDTH, y + SPIKE_W), (WIDTH - SPIKE_D, mid)]
         pygame.draw.polygon(win, SPIKE_COL, pts_r)
         pygame.draw.line(win, SPIKE_TIP, (WIDTH, mid), (WIDTH - SPIKE_D, mid), 2)
@@ -30,12 +33,15 @@ def draw_spikes(win):
 
 
 def draw_hud(win, p1, p2, timer_frames, jp_font):
+    # 背景バー
     pygame.draw.rect(win, (20, 20, 20), (0, 0, WIDTH, HUD_H))
 
     bar_w = 280
     bar_h = 18
     pad_x = 20
+    timer_w = 60
 
+    # --- P1 HPバー（左→右）---
     p1_ratio = max(0, p1.hp / 100)
     pygame.draw.rect(win, (60, 0, 0), (pad_x, 10, bar_w, bar_h), border_radius=4)
     if p1_ratio > 0:
@@ -43,14 +49,17 @@ def draw_hud(win, p1, p2, timer_frames, jp_font):
         pygame.draw.rect(win, col, (pad_x, 10, int(bar_w * p1_ratio), bar_h), border_radius=4)
     pygame.draw.rect(win, (180, 180, 180), (pad_x, 10, bar_w, bar_h), 1, border_radius=4)
 
+    # P1 ガードpips
     for i in range(Fighter.GUARD_MAX):
         filled = i < p1.guard_hp
         pygame.draw.circle(win, (100, 180, 255) if filled else (40, 40, 60),
                            (pad_x + i * 14, 36), 5)
 
+    # P1ラベル
     label = jp_font.render("P1", True, (255, 80, 80))
     win.blit(label, (pad_x, -2))
 
+    # --- P2 HPバー（右→左）---
     p2_ratio = max(0, p2.hp / 100)
     p2_x = WIDTH - pad_x - bar_w
     pygame.draw.rect(win, (0, 0, 60), (p2_x, 10, bar_w, bar_h), border_radius=4)
@@ -60,14 +69,17 @@ def draw_hud(win, p1, p2, timer_frames, jp_font):
         pygame.draw.rect(win, col, (p2_x + bar_w - filled_w, 10, filled_w, bar_h), border_radius=4)
     pygame.draw.rect(win, (180, 180, 180), (p2_x, 10, bar_w, bar_h), 1, border_radius=4)
 
+    # P2 ガードpips
     for i in range(Fighter.GUARD_MAX):
         filled = i < p2.guard_hp
         pygame.draw.circle(win, (100, 180, 255) if filled else (40, 40, 60),
                            (WIDTH - pad_x - i * 14, 36), 5)
 
+    # P2ラベル
     label = jp_font.render("P2", True, (80, 80, 255))
     win.blit(label, (WIDTH - pad_x - label.get_width(), -2))
 
+    # --- タイマー（中央）---
     secs = max(0, timer_frames // FPS)
     t_col = (255, 80, 80) if secs <= 10 else (240, 240, 240)
     t_surf = jp_font.render(str(secs), True, t_col)
@@ -97,7 +109,7 @@ def show_win_screen(win, text, flash_color, jp_big, jp_small):
     cy = HEIGHT // 2 - main_s.get_height() // 2
     win.blit(shadow, (cx + 3, cy + 3))
     win.blit(main_s, (cx, cy))
-    sub = jp_small.render("\u30af\u30ea\u30c3\u30af\u3057\u3066\u518d\u30d7\u30ec\u30a4", True, (160, 160, 160))
+    sub = jp_small.render("クリックして再プレイ", True, (160, 160, 160))
     win.blit(sub, (WIDTH // 2 - sub.get_width() // 2, cy + main_s.get_height() + 12))
     pygame.display.update()
 
@@ -110,12 +122,12 @@ def show_win_screen(win, text, flash_color, jp_big, jp_small):
                 waiting = False
 
 
-def main():
+async def main():
     clock = pygame.time.Clock()
 
-    GAME_MODE = select_mode()
+    GAME_MODE = await select_mode()
 
-    # \u6226\u95d8BGM\u306b\u5207\u308a\u66ff\u3048
+    # 戦闘BGMに切り替え
     pygame.mixer.music.fadeout(400)
     pygame.mixer.music.load("assets/bgm.mp3")
     pygame.mixer.music.set_volume(0.22)
@@ -136,10 +148,12 @@ def main():
     while run:
         clock.tick(FPS)
 
+        # 背景
         win_surf = WIN
         win_surf.blit(background_img, (0, 0))
         draw_spikes(win_surf)
 
+        # スクリーンフラッシュ
         if screen_flash > 0:
             flash_surf = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
             flash_surf.fill((255, 140, 0, min(180, screen_flash * 18)))
@@ -176,11 +190,13 @@ def main():
         draw_popup(win_surf, player1, jp_popup)
         draw_popup(win_surf, player2, jp_popup)
 
+        # タイマー減算
         if timer_frames > 0:
             timer_frames -= 1
 
         draw_hud(win_surf, player1, player2, timer_frames, jp_hud)
 
+        # 勝敗判定
         winner = None
         flash_col = (220, 220, 220)
         if player1.hp <= 0:
@@ -203,11 +219,12 @@ def main():
         if winner:
             pygame.display.update()
             show_win_screen(win_surf, winner, flash_col, jp_big, jp_small)
-            main()
+            await main()
             return
 
         pygame.display.update()
+        await asyncio.sleep(0)
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
