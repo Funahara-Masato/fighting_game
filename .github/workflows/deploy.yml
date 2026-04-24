@@ -25,6 +25,9 @@ jobs:
       - name: Install pygbag
         run: pip install pygbag
 
+      - name: Remove any MP3 files
+        run: find . -name "*.mp3" -delete
+
       - name: Build
         env:
           SDL_VIDEODRIVER: dummy
