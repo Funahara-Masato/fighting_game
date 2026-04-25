@@ -128,15 +128,23 @@ async def main():
     GAME_MODE = await select_mode()
 
     # 戦闘BGMに切り替え
-    pygame.mixer.music.fadeout(400)
-    pygame.mixer.music.load("assets/bgm.ogg")
-    pygame.mixer.music.set_volume(0.22)
-    pygame.mixer.music.play(-1)
+    try:
+        pygame.mixer.music.fadeout(400)
+        pygame.mixer.music.load("assets/bgm.ogg")
+        pygame.mixer.music.set_volume(0.22)
+        pygame.mixer.music.play(-1)
+    except Exception:
+        pass
 
-    jp_hud   = pygame.font.Font("meiryo.ttf", 18)
-    jp_popup = pygame.font.Font("meiryo.ttf", 22)
-    jp_big   = pygame.font.Font("meiryo.ttf", 52)
-    jp_small = pygame.font.Font("meiryo.ttf", 22)
+    def _font(size):
+        try:
+            return pygame.font.Font("meiryo.ttf", size)
+        except Exception:
+            return pygame.font.SysFont(None, size)
+    jp_hud   = _font(18)
+    jp_popup = _font(22)
+    jp_big   = _font(52)
+    jp_small = _font(22)
 
     player1 = Fighter(100, GROUND, RED)
     player2 = Fighter(600, GROUND, BLUE, facing="left")

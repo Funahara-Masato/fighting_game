@@ -25,16 +25,24 @@ def _glow_text(win, font, text, color, cx, cy, glow_r=3):
 
 
 async def select_mode():
-    select_bgm_sound.play(loops=-1)
+    try:
+        select_bgm_sound.play(loops=-1)
+    except Exception:
+        pass
 
     clock = pygame.time.Clock()
     run = True
     mode = None
     frame = 0
 
-    jp_title = pygame.font.Font("meiryo.ttf", 36)
-    jp_btn   = pygame.font.Font("meiryo.ttf", 22)
-    jp_info  = pygame.font.Font("meiryo.ttf", 13)
+    def _font(size):
+        try:
+            return pygame.font.Font("meiryo.ttf", size)
+        except Exception:
+            return pygame.font.SysFont(None, size)
+    jp_title = _font(36)
+    jp_btn   = _font(22)
+    jp_info  = _font(13)
 
     ai_rect  = pygame.Rect(WIDTH // 2 - 160, 130, 320, 56)
     pvp_rect = pygame.Rect(WIDTH // 2 - 160, 210, 320, 56)
