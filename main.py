@@ -97,41 +97,20 @@ def draw_popup(win, fighter, font):
 
 
 async def show_win_screen(win, text, flash_color, jp_big, jp_small):
-    try:
-        pygame.mixer.music.stop()
-    except Exception:
-        pass
-
-    for i in range(4):
-        win.fill(flash_color if i % 2 == 0 else (10, 10, 10))
-        pygame.display.update()
-        await asyncio.sleep(0.12)
-
     win.fill((10, 10, 10))
-    shadow = jp_big.render(text, True, (0, 0, 0))
     main_s = jp_big.render(text, True, flash_color)
     cx = WIDTH // 2 - main_s.get_width() // 2
     cy = HEIGHT // 2 - main_s.get_height() // 2
-    win.blit(shadow, (cx + 3, cy + 3))
     win.blit(main_s, (cx, cy))
-    sub_text = "Click to replay"
-    try:
-        sub_text = "クリックして再プレイ"
-        pygame.font.Font("meiryo.ttf", 8)
-    except Exception:
-        pass
-    sub = jp_small.render(sub_text, True, (160, 160, 160))
+    sub = jp_small.render("Click to replay", True, (160, 160, 160))
     win.blit(sub, (WIDTH // 2 - sub.get_width() // 2, cy + main_s.get_height() + 12))
     pygame.display.update()
 
-    waiting = True
-    while waiting:
+    while True:
         await asyncio.sleep(0)
         for ev in pygame.event.get():
-            if ev.type == pygame.QUIT:
-                pygame.quit(); sys.exit()
             if ev.type in (pygame.MOUSEBUTTONDOWN, pygame.KEYDOWN):
-                waiting = False
+                return
 
 
 async def main():
@@ -163,8 +142,6 @@ async def main():
         screen_flash = 0
 
         while True:
-            clock.tick(FPS)
-
             win_surf = WIN
             win_surf.blit(background_img, (0, 0))
             draw_spikes(win_surf)

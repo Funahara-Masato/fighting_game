@@ -60,7 +60,6 @@ async def select_mode():
     pvp_rect = pygame.Rect(WIDTH // 2 - 160, 210, 320, 56)
 
     while run:
-        clock.tick(FPS)
         frame += 1
         mx, my = pygame.mouse.get_pos()
 
