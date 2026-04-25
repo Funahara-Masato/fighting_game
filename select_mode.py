@@ -35,11 +35,23 @@ async def select_mode():
     mode = None
     frame = 0
 
+    _meiryo = None
+    try:
+        _meiryo = pygame.font.Font("meiryo.ttf", 8)
+    except Exception:
+        pass
+
     def _font(size):
-        try:
-            return pygame.font.Font("meiryo.ttf", size)
-        except Exception:
-            return pygame.font.SysFont(None, size)
+        if _meiryo is not None:
+            try:
+                return pygame.font.Font("meiryo.ttf", size)
+            except Exception:
+                pass
+        return pygame.font.SysFont(None, size)
+
+    def _has_jp():
+        return _meiryo is not None
+
     jp_title = _font(36)
     jp_btn   = _font(22)
     jp_info  = _font(13)
@@ -52,14 +64,15 @@ async def select_mode():
         frame += 1
         mx, my = pygame.mouse.get_pos()
 
-        WIN.fill(BG)
+        WIN.fill((25, 25, 45))  # 視認できる暗青
 
         # タイトルグロー（脈動）
         pulse = 0.75 + 0.25 * math.sin(frame * 0.06)
         r = int(220 * pulse)
         g = int(40 * pulse)
         title_col = (r, g, 0)
-        _glow_text(WIN, jp_title, "ゴム人間格闘ゲーム", title_col,
+        title_text = "Rubber Human Fighting" if not _has_jp() else "ゴム人間格闘ゲーム"
+        _glow_text(WIN, jp_title, title_text, title_col,
                    WIDTH // 2, 68, glow_r=4)
 
         # サブタイトル
@@ -67,9 +80,11 @@ async def select_mode():
         WIN.blit(sub, (WIDTH // 2 - sub.get_width() // 2, 110))
 
         # ボタン描画
+        ai_label  = "AIと対戦" if _has_jp() else "vs AI"
+        pvp_label = "PvP"
         for rect, label, base_col in [
-            (ai_rect,  "AIと対戦",  ACCENT_R),
-            (pvp_rect, "PvP",       ACCENT_B),
+            (ai_rect,  ai_label,  ACCENT_R),
+            (pvp_rect, pvp_label, ACCENT_B),
         ]:
             hover = rect.collidepoint(mx, my)
             border_col = tuple(min(255, c + 60) for c in base_col) if hover else base_col
@@ -78,7 +93,7 @@ async def select_mode():
             pygame.draw.rect(WIN, bg_col, rect, border_radius=8)
             pygame.draw.rect(WIN, border_col, rect, 2, border_radius=8)
 
-            txt_surf = jp_btn.render(label, True, TEXT_LT if hover else TEXT_DIM)
+            txt_surf = jp_btn.render(label, True, (255, 255, 255) if hover else TEXT_LT)
             WIN.blit(txt_surf, (rect.centerx - txt_surf.get_width() // 2,
                                 rect.centery - txt_surf.get_height() // 2))
 
