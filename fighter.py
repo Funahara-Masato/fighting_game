@@ -672,7 +672,6 @@ class Fighter:
                 self.hit_flash    = 6
                 self.wobble_timer = 10
                 self.stun_timer   = 8
-                self.vel_x        = 0
                 # 即座に安全位置へ強制移動
                 self.x = SPIKE_SAFE if in_left else WIDTH - self.width - SPIKE_SAFE
                 self.spike_cooldown = 55
