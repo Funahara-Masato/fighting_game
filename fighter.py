@@ -655,16 +655,25 @@ class Fighter:
         self.x = max(0, min(WIDTH - self.width, self.x))
 
         # 棘壁ダメージ（端の22px以内）
+        SPIKE_ZONE = 22
+        SPIKE_SAFE = 40  # ノックバック後の安全位置
         if self.spike_cooldown > 0:
             self.spike_cooldown -= 1
-        elif self.spike_cooldown == 0:
-            in_left  = self.x < 22
-            in_right = self.x > WIDTH - self.width - 22
+            # クールダウン中も棘ゾーンから強制排除
+            if self.x < SPIKE_ZONE:
+                self.x = SPIKE_ZONE
+            elif self.x > WIDTH - self.width - SPIKE_ZONE:
+                self.x = WIDTH - self.width - SPIKE_ZONE
+        else:
+            in_left  = self.x < SPIKE_ZONE
+            in_right = self.x > WIDTH - self.width - SPIKE_ZONE
             if in_left or in_right:
-                self.hp         -= 4
-                self.hit_flash   = 6
+                self.hp          -= 4
+                self.hit_flash    = 6
                 self.wobble_timer = 10
-                self.stun_timer  = 8
-                self.x          += 28 if in_left else -28
+                self.stun_timer   = 8
+                self.vel_x        = 0
+                # 即座に安全位置へ強制移動
+                self.x = SPIKE_SAFE if in_left else WIDTH - self.width - SPIKE_SAFE
                 self.spike_cooldown = 55
                 spike_sound.play()
