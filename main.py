@@ -137,17 +137,6 @@ async def show_win_screen(win, text, flash_color, jp_big, jp_small):
 async def main():
     clock = pygame.time.Clock()
 
-    GAME_MODE = await select_mode()
-
-    # 戦闘BGMに切り替え
-    try:
-        pygame.mixer.music.fadeout(400)
-        pygame.mixer.music.load("assets/bgm.ogg")
-        pygame.mixer.music.set_volume(0.22)
-        pygame.mixer.music.play(-1)
-    except Exception:
-        pass
-
     def _font(size):
         try:
             return pygame.font.Font("meiryo.ttf", size)
@@ -158,92 +147,88 @@ async def main():
     jp_big   = _font(52)
     jp_small = _font(22)
 
-    player1 = Fighter(100, GROUND, RED)
-    player2 = Fighter(600, GROUND, BLUE, facing="left")
+    while True:
+        GAME_MODE = await select_mode()
 
-    timer_frames = TIMER_SECONDS * FPS
-    screen_flash = 0
+        try:
+            pygame.mixer.music.load("assets/bgm.ogg")
+            pygame.mixer.music.set_volume(0.22)
+            pygame.mixer.music.play(-1)
+        except Exception:
+            pass
 
-    run = True
-    while run:
-        clock.tick(FPS)
+        player1 = Fighter(100, GROUND, RED)
+        player2 = Fighter(600, GROUND, BLUE, facing="left")
+        timer_frames = TIMER_SECONDS * FPS
+        screen_flash = 0
 
-        # 背景
-        win_surf = WIN
-        win_surf.blit(background_img, (0, 0))
-        draw_spikes(win_surf)
+        while True:
+            clock.tick(FPS)
 
-        # スクリーンフラッシュ
-        if screen_flash > 0:
-            flash_surf = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-            flash_surf.fill((255, 140, 0, min(180, screen_flash * 18)))
-            win_surf.blit(flash_surf, (0, 0))
-            screen_flash -= 1
+            win_surf = WIN
+            win_surf.blit(background_img, (0, 0))
+            draw_spikes(win_surf)
 
-        if player1.trigger_screen_flash:
-            screen_flash = 8
-            player1.trigger_screen_flash = False
-        if player2.trigger_screen_flash:
-            screen_flash = 8
-            player2.trigger_screen_flash = False
+            if screen_flash > 0:
+                flash_surf = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+                flash_surf.fill((255, 140, 0, min(180, screen_flash * 18)))
+                win_surf.blit(flash_surf, (0, 0))
+                screen_flash -= 1
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit(); sys.exit()
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_F11:
-                    pygame.display.toggle_fullscreen()
+            if player1.trigger_screen_flash:
+                screen_flash = 8
+                player1.trigger_screen_flash = False
+            if player2.trigger_screen_flash:
+                screen_flash = 8
+                player2.trigger_screen_flash = False
 
-        keys = pygame.key.get_pressed()
-        player1.move(keys, pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s,
-                     guard_key=pygame.K_q, opponent=player2)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit(); sys.exit()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_F11:
+                        pygame.display.toggle_fullscreen()
 
-        if GAME_MODE == "AI":
-            player2.move(keys, ai=True, opponent=player1)
-        else:
-            player2.move(keys, pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN,
-                         guard_key=pygame.K_RSHIFT, opponent=player1, ai=False)
-
-        player1.draw(win_surf)
-        player2.draw(win_surf)
-
-        draw_popup(win_surf, player1, jp_popup)
-        draw_popup(win_surf, player2, jp_popup)
-
-        # タイマー減算
-        if timer_frames > 0:
-            timer_frames -= 1
-
-        draw_hud(win_surf, player1, player2, timer_frames, jp_hud)
-
-        # 勝敗判定
-        winner = None
-        flash_col = (220, 220, 220)
-        if player1.hp <= 0:
-            winner = "P2 WINS!"
-            flash_col = (60, 60, 220)
-        elif player2.hp <= 0:
-            winner = "P1 WINS!"
-            flash_col = (220, 60, 60)
-        elif timer_frames <= 0:
-            if player1.hp > player2.hp:
-                winner = "P1 WINS!"
-                flash_col = (220, 60, 60)
-            elif player2.hp > player1.hp:
-                winner = "P2 WINS!"
-                flash_col = (60, 60, 220)
+            keys = pygame.key.get_pressed()
+            player1.move(keys, pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s,
+                         guard_key=pygame.K_q, opponent=player2)
+            if GAME_MODE == "AI":
+                player2.move(keys, ai=True, opponent=player1)
             else:
-                winner = "DRAW!"
-                flash_col = (180, 180, 180)
+                player2.move(keys, pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN,
+                             guard_key=pygame.K_RSHIFT, opponent=player1, ai=False)
 
-        if winner:
+            player1.draw(win_surf)
+            player2.draw(win_surf)
+            draw_popup(win_surf, player1, jp_popup)
+            draw_popup(win_surf, player2, jp_popup)
+
+            if timer_frames > 0:
+                timer_frames -= 1
+
+            draw_hud(win_surf, player1, player2, timer_frames, jp_hud)
+
+            winner = None
+            flash_col = (220, 220, 220)
+            if player1.hp <= 0:
+                winner = "P2 WINS!"; flash_col = (60, 60, 220)
+            elif player2.hp <= 0:
+                winner = "P1 WINS!"; flash_col = (220, 60, 60)
+            elif timer_frames <= 0:
+                if player1.hp > player2.hp:
+                    winner = "P1 WINS!"; flash_col = (220, 60, 60)
+                elif player2.hp > player1.hp:
+                    winner = "P2 WINS!"; flash_col = (60, 60, 220)
+                else:
+                    winner = "DRAW!"; flash_col = (180, 180, 180)
+
+            if winner:
+                pygame.display.update()
+                await show_win_screen(win_surf, winner, flash_col, jp_big, jp_small)
+                break  # 内側ループを抜けて外側でselect_modeへ
+
             pygame.display.update()
-            await show_win_screen(win_surf, winner, flash_col, jp_big, jp_small)
-            await main()
-            return
-
-        pygame.display.update()
-        await asyncio.sleep(0)
+            await asyncio.sleep(0)
 
 
 if __name__ == "__main__":
